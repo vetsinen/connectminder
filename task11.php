@@ -1,7 +1,36 @@
 <?php
-var_dump($_POST);
+function fibo($n)
+{
+    if ($n <= 0) {
+        return 0;
+    } elseif ($n == 1) {
+        return 1;
+    }
+
+    $fib = [0, 1];
+
+    for ($i = 2; $i <= $n; $i++) {
+        $fib[$i] = $fib[$i - 1] + $fib[$i - 2];
+    }
+
+    return $fib[$n];
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $errors = [];
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // IP from shared internet
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // IP passed from a proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+
+    $serializedData = "";
+    $serializedData = file_get_contents('data.txt');
+
 
     if (isset($_POST['username'])) {
         $username = trim($_POST['username']);
@@ -23,10 +52,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (empty($errors)) {
-        // If no errors, process the data (e.g., save to database)
-        // Here we'll just simulate a success response
+        $number = intval($number);
+        error_log(fibo($number));
         $response = array(
             "status" => "success",
+            "ip" => $ip,
+            "fibo" => fibo($number),
             "message" => "Data submitted successfully!"
         );
     } else {
@@ -37,12 +68,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         );
     }
 
-    error_log (json_encode($response));
-    // Send the response as JSON if using AJAX
+    //error_log (json_encode($response));
     header('Content-Type: application/json');
     echo json_encode($response);
 
-    // If not using AJAX, you can redirect to another page with the response
-    // or render the errors on the same page
 }
 
