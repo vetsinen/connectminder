@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hello, jQuery</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+<body>
+<button type="button" class="btn btn-primary">
+    +1 <span class="badge badge-light">9</span>
+</button>
+<script>
+    $("button.btn").on("click", function() {
+        console.log("Button Clicked:", this);
+        let badge = $(this).find("span.badge");
+        let currentValue = parseInt(badge.text());
+        badge.text(currentValue + 1);
+    });
+</script>
+</body>
+</html>
