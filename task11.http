@@ -1,8 +1,0 @@
-### Send POST request with json body
-POST http://localhost:8000/task11.php
-Content-Type: application/json
-
-{
-  "username": "hjry",
-  "number": "457"
-}
