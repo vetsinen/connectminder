@@ -1,37 +1,11 @@
 <?php
-function fibo($n)
-{
-    if ($n <= 0) {
-        return 0;
-    } elseif ($n == 1) {
-        return 1;
-    }
-
-    $fib = [0, 1];
-
-    for ($i = 2; $i <= $n; $i++) {
-        $fib[$i] = $fib[$i - 1] + $fib[$i - 2];
-    }
-
-    return $fib[$n];
-}
+require_once "task11lib.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $errors = [];
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        // IP from shared internet
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        // IP passed from a proxy
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-    } else {
-        $ip = $_SERVER['REMOTE_ADDR'];
-    }
+    $history = loadState(); error_log(json_encode($history));
 
-    $serializedData = "";
-    $serializedData = file_get_contents('data.txt');
-
-
+    // validate username
     if (isset($_POST['username'])) {
         $username = trim($_POST['username']);
         if (strlen($username) < 3) {
@@ -41,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors['username'] = "Username is required.";
     }
 
-    // Validate Number
+    // validate number
     if (isset($_POST['number'])) {
         $number = trim($_POST['number']);
         if (!is_numeric($number) || intval($number) <= 0) {
@@ -53,13 +27,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (empty($errors)) {
         $number = intval($number);
-        error_log(fibo($number));
-        $response = array(
-            "status" => "success",
-            "ip" => $ip,
-            "fibo" => fibo($number),
-            "message" => "Data submitted successfully!"
+        $fibonacci = fibo($number);
+
+        $historyItem = array(
+            "username" => $username,
+            "number" => $number,
+            "fibo" => $fibonacci
         );
+        error_log(json_encode($historyItem));
+        array_unshift($history, $historyItem); //adding element to the beginning of the array
+        saveState($history);
+
+        $response = array_merge($historyItem, [
+            "status" => "success",
+            "ip" => ipwrapper(),
+            "fibo" => $fibonacci,
+            "message" => "Data submitted successfully!"
+        ]);
     } else {
         // If there are errors, return them
         $response = array(
@@ -71,6 +55,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     //error_log (json_encode($response));
     header('Content-Type: application/json');
     echo json_encode($response);
-
-}
+} //end POST processing
 
